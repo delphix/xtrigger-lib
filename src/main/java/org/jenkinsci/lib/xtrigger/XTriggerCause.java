@@ -1,9 +1,9 @@
 package org.jenkinsci.lib.xtrigger;
 
 import hudson.console.HyperlinkNote;
-import hudson.model.AbstractBuild;
 import hudson.model.Cause;
 import hudson.model.Hudson;
+import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import org.apache.commons.io.FileUtils;
@@ -39,7 +39,7 @@ public class XTriggerCause extends Cause {
     }
 
     @Override
-    public void onAddedTo(final AbstractBuild build) {
+    public void onAddedTo(final Run build) {
         final XTriggerCauseAction causeAction = build.getAction(XTriggerCauseAction.class);
         if (causeAction != null) {
             try {
