@@ -112,7 +112,6 @@ public abstract class AbstractTrigger extends Trigger<BuildableItem> implements 
 
     @Override
     public void run() {
-        Job project = (Job) job;
         XTriggerDescriptor descriptor = getDescriptor();
         ExecutorService executorService = descriptor.getExecutor();
         XTriggerLog log = null;
@@ -121,9 +120,9 @@ public abstract class AbstractTrigger extends Trigger<BuildableItem> implements 
             log = new XTriggerLog(listener);
             if (Hudson.getInstance().isQuietingDown()) {
                 log.info("Jenkins is quieting down.");
-            } else if (!project.isBuildable()) {
+            } else if (!((Job<?, ?>) job).isBuildable()) {
                 log.info("The job is not buildable. Activate it to poll again.");
-            } else if (!unblockConcurrentBuild && project.isBuilding()) {
+            } else if (!unblockConcurrentBuild && ((Job<?, ?>) job).isBuilding()) {
                 log.info("The job is building. Waiting for next poll.");
             } else {
                 Runner runner = new Runner(getName());
@@ -201,10 +200,10 @@ public abstract class AbstractTrigger extends Trigger<BuildableItem> implements 
                     Action[] actions = new Action[2];
                     actions[0] = new CauseAction(new XTriggerCause(triggerName, getCause(), true));
                     actions[1] = getScheduledXTriggerAction(null, log);
-                    ParameterizedJobMixIn scheduledJob = new ParameterizedJobMixIn() {
+                    ParameterizedJobMixIn<?, ?> scheduledJob = new ParameterizedJobMixIn() {
                         @Override
-                        protected Job asJob() {
-                            return (Job) job;
+                        protected Job<?, ?> asJob() {
+                            return (Job<?, ?>) job;
                         }
                     };
                     scheduledJob.scheduleBuild2(0, actions);
