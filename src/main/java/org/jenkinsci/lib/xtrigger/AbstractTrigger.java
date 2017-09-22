@@ -197,16 +197,13 @@ public abstract class AbstractTrigger extends Trigger<BuildableItem> implements 
 
                 if (changed) {
                     log.info("Changes found. Scheduling a build.");
-                    Action[] actions = new Action[2];
-                    actions[0] = new CauseAction(new XTriggerCause(triggerName, getCause(), true));
-                    actions[1] = getScheduledXTriggerAction(null, log);
                     ParameterizedJobMixIn<?, ?> scheduledJob = new ParameterizedJobMixIn() {
                         @Override
                         protected Job<?, ?> asJob() {
                             return (Job<?, ?>) job;
                         }
                     };
-                    scheduledJob.scheduleBuild2(0, actions);
+                    scheduledJob.scheduleBuild2(0, getScheduledXTriggerActions(null, log, triggerName));
                 } else {
                     log.info("No changes.");
                 }
@@ -253,12 +250,21 @@ public abstract class AbstractTrigger extends Trigger<BuildableItem> implements 
         LOGGER.log(Level.WARNING, "Polling failed", e);
     }
 
-    protected Action getScheduledXTriggerAction(Node pollingNode, XTriggerLog log) throws XTriggerException {
+    protected Action[] getScheduledXTriggerActions(Node pollingNode, XTriggerLog log, String triggerName)
+            throws XTriggerException {
+        Action[] actions = getScheduledActions(pollingNode, log);
+        int nbNewAction = actions.length + 2;
+        Action[] newActions = new Action[nbNewAction];
+        for (int i = 0; i < actions.length; i++) {
+            newActions[i] = actions[i];
+        }
         try {
-            return new XTriggerCauseAction(FileUtils.readFileToString(getLogFile()));
+            newActions[newActions.length - 2] = new CauseAction(new XTriggerCause(triggerName, getCause(), true));
+            newActions[newActions.length - 1] = new XTriggerCauseAction(FileUtils.readFileToString(getLogFile()));
         } catch (IOException ioe) {
             throw new XTriggerException(ioe);
         }
+        return newActions;
     }
 
     protected abstract Action[] getScheduledActions(Node pollingNode, XTriggerLog log);
