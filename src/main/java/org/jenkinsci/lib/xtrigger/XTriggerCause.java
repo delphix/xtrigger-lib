@@ -39,14 +39,14 @@ public class XTriggerCause extends Cause {
     }
 
     @Override
-    public void onAddedTo(final Run build) {
-        final XTriggerCauseAction causeAction = build.getAction(XTriggerCauseAction.class);
+    public void onAddedTo(final Run run) {
+        final XTriggerCauseAction causeAction = run.getAction(XTriggerCauseAction.class);
         if (causeAction != null) {
             try {
                 Hudson.getInstance().getRootPath().act(new Callable<Void, XTriggerException>() {
                     @Override
                     public Void call() throws XTriggerException {
-                        causeAction.setBuild(build);
+                        causeAction.setRun(run);
                         File triggerLogFile = causeAction.getLogFile();
                         String logContent = causeAction.getLogMessage();
                         try {
